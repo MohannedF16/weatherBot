@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Bot</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .search-section {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      margin-bottom: 20px;
+    }
+
+    .search-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .search-btn {
+      padding: 12px 30px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-weight: bold;
+    }
+
+    .search-btn:hover {
+      background: #5568d3;
+    }
+
+    .search-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .locations-list {
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .location-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: #f5f5f5;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      border: 1px solid #e0e0e0;
+    }
+
+    .location-item:hover {
+      background: #e3f2fd;
+      border-color: #667eea;
+    }
+
+    .weather-card {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      animation: slideIn 0.5s ease-in-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .weather-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 15px;
+    }
+
+    .location-info h2 {
+      font-size: 1.8rem;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .location-info p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .temperature {
+      text-align: right;
+    }
+
+    .temp-value {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .temp-description {
+      color: #666;
+      text-transform: capitalize;
+      margin-top: 5px;
+    }
+
+    .weather-details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .detail-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .detail-label {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+
+    .detail-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .coordinates {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+
+    .coordinates h3 {
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .coord-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      color: #666;
+    }
+
+    .loading {
+      text-align: center;
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    .error {
+      background: #ffebee;
+      border: 2px solid #f44336;
+      color: #c62828;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .success-message {
+      color: #4caf50;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.95rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌤️ Weather Bot</h1>
+      <p>Find weather information for any city in the world</p>
+    </div>
+
+    <div class="search-section">
+      <form id="searchForm" class="search-form">
+        <input
+          type="text"
+          id="cityInput"
+          class="search-input"
+          placeholder="Enter city name (e.g., London, New York, Tokyo)"
+          required
+        />
+        <button type="submit" class="search-btn" id="searchBtn">Search</button>
+      </form>
+
+      <div id="locationsList" class="locations-list hidden"></div>
+      <div id="error" class="error hidden"></div>
+    </div>
+
+    <div id="loading" class="loading hidden">⏳ Loading weather data...</div>
+    <div id="weatherCard" class="weather-card hidden"></div>
+  </div>
+
+  <script>
+    const cityInput = document.getElementById('cityInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchForm = document.getElementById('searchForm');
+    const locationsList = document.getElementById('locationsList');
+    const errorDiv = document.getElementById('error');
+    const loadingDiv = document.getElementById('loading');
+    const weatherCard = document.getElementById('weatherCard');
+
+    const hideAll = () => {
+      locationsList.classList.add('hidden');
+      errorDiv.classList.add('hidden');
+      loadingDiv.classList.add('hidden');
+      weatherCard.classList.add('hidden');
+    };
+
+    const showError = (msg) => {
+      hideAll();
+      errorDiv.textContent = msg;
+      errorDiv.classList.remove('hidden');
+    };
+
+    const showLoading = () => {
+      hideAll();
+      loadingDiv.classList.remove('hidden');
+    };
+
+    searchForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const city = cityInput.value.trim();
+
+      if (!city) {
+        showError('Please enter a city name');
+        return;
+      }
+
+      showLoading();
+
+      try {
+        const response = await fetch(`/api/geo?city=${encodeURIComponent(city)}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          showError(data.error || 'Failed to fetch locations');
+          return;
+        }
+
+        hideAll();
+        locationsList.innerHTML = '<p class="success-message">Select a location:</p>';
+        
+        data.forEach((location) => {
+          const div = document.createElement('div');
+          div.className = 'location-item';
+          div.innerHTML = `<strong>${location.name}</strong>${location.region !== 'N/A' ? ` - ${location.region}` : ''}<span> (${location.country})</span>`;
+          div.addEventListener('click', () => selectLocation(location));
+          locationsList.appendChild(div);
+        });
+
+        locationsList.classList.remove('hidden');
+      } catch (err) {
+        showError('Network error: ' + err.message);
+      }
+    });
+
+    const selectLocation = async (location) => {
+      showLoading();
+
+      try {
+        const response = await fetch(`/api/weather?lat=${location.lat}&lon=${location.lon}`);
+        const weather = await response.json();
+
+        if (!response.ok) {
+          showError(weather.error || 'Failed to fetch weather');
+          return;
+        }
+
+        hideAll();
+        weatherCard.innerHTML = `
+          <div class="weather-header">
+            <div class="location-info">
+              <h2>${weather.city}, ${weather.country}</h2>
+              <p>📍 Region information loaded</p>
+            </div>
+            <div class="temperature">
+              <div class="temp-value">${weather.temperature}°C</div>
+              <div class="temp-description">${weather.weatherDescription}</div>
+            </div>
+          </div>
+
+          <div class="weather-details">
+            <div class="detail-card">
+              <div class="detail-label">💧 Humidity</div>
+              <div class="detail-value">${weather.humidity}%</div>
+            </div>
+
+            <div class="detail-card">
+              <div class="detail-label">🌡️ Feels Like</div>
+              <div class="detail-value">${weather.feelsLike}°C</div>
+            </div>
+
+            <div class="detail-card">
+              <div class="detail-label">🌪️ Wind Speed</div>
+              <div class="detail-value">${weather.windSpeed} m/s</div>
+            </div>
+
+            <div class="detail-card">
+              <div class="detail-label">☁️ Cloudiness</div>
+              <div class="detail-value">${weather.cloudiness}%</div>
+            </div>
+
+            <div class="detail-card">
+              <div class="detail-label">🔍 Visibility</div>
+              <div class="detail-value">${weather.visibility} km</div>
+            </div>
+
+            <div class="detail-card">
+              <div class="detail-label">🔘 Pressure</div>
+              <div class="detail-value">${weather.pressure} hPa</div>
+            </div>
+
+            <div class="detail-card">
+              <div class="detail-label">🌅 Sunrise</div>
+              <div class="detail-value">${weather.sunrise}</div>
+            </div>
+
+            <div class="detail-card">
+              <div class="detail-label">🌇 Sunset</div>
+              <div class="detail-value">${weather.sunset}</div>
+            </div>
+          </div>
+
+          <div class="coordinates">
+            <h3>📡 Coordinates & Timezone</h3>
+            <div class="coord-row">
+              <span>Latitude:</span>
+              <strong>${weather.lat}</strong>
+            </div>
+            <div class="coord-row">
+              <span>Longitude:</span>
+              <strong>${weather.lon}</strong>
+            </div>
+            <div class="coord-row">
+              <span>Timezone Offset:</span>
+              <strong>${(weather.timezone / 3600).toFixed(1)} hours from UTC</strong>
+            </div>
+          </div>
+        `;
+        weatherCard.classList.remove('hidden');
+      } catch (err) {
+        showError('Network error: ' + err.message);
+      }
+    };
+  </script>
+</body>
+</html>
