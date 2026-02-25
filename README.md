@@ -21,12 +21,12 @@ A simple, lightweight weather application built with Node.js. Enter a city name 
 
 ```
 weatherBot/
-├── server/
-│   ├── index.js           # Main server (handles API + static files)
-│   ├── .env               # Environment variables
-│   ├── package.json       # Dependencies
-│   └── public/
+├── public/
 │       └── index.html     # Complete frontend (HTML/CSS/JS)
+├── index.js           # Main server (handles API + static files)
+├── .env               # Environment variables
+├── package.json       # Dependencies
+│  
 ├── package.json           # Root package
 └── README.md
 ```
@@ -54,13 +54,12 @@ npm install
 Or navigate to server folder:
 
 ```bash
-cd server
 npm install
 ```
 
 ### 3. Configure Environment Variables
 
-Edit `server/.env`:
+Edit `.env`:
 
 ```
 PORT=5000
