@@ -107,7 +107,7 @@ const server = http.createServer((req, res) => {
         }
 
         const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`;
-
+        
         request(url, (error, response, body) => {
             if (error) {
                 res.writeHead(500, { 'Content-Type': 'application/json' });
